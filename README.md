@@ -29,11 +29,26 @@ This is the **first replication cycle** — proving that AI can co-select workfl
 
 ## Getting Started
 
-### Installation
+### Quick Setup
+
+For automatic setup, use the provided scripts:
+
+**Windows:**
+```
+setup.bat
+```
+
+**Linux/macOS:**
+```bash
+chmod +x setup.sh
+./setup.sh
+```
+
+### Manual Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/TrustNet.git
+git clone https://github.com/ServTrust/TrustNet.git
 cd TrustNet
 
 # Install dependencies
@@ -55,9 +70,25 @@ python src/prototype/consensus_demo.py --models model1 model2 model3
 ```
 
 #### Web Interface
+
+**Using Run Scripts:**
+
+**Windows:**
+```
+run_app.bat
+```
+
+**Linux/macOS:**
+```bash
+chmod +x run_app.sh
+./run_app.sh
+```
+
+**Manual Start:**
 ```bash
 # Start the web server
-python src/prototype/app.py
+cd src/prototype
+python app.py    # or python3 app.py on Linux/macOS
 
 # Open your browser to http://localhost:5000
 ```

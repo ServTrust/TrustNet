@@ -16,7 +16,7 @@ This directory contains the first "sprout" of TrustNet - a working demonstration
 
 ```bash
 # Simple usage with prompt
-python consensus_demo.py
+python consensus_demo.py  # or python3 consensus_demo.py on Linux/macOS
 
 # Specify input directly
 python consensus_demo.py --input "Text to verify"
@@ -30,11 +30,41 @@ python consensus_demo.py --log "path/to/log.json" --input "Text to verify"
 
 ### Web Interface
 
+#### From Root Directory
+
+For convenience, you can use the run scripts from the project root:
+
+**Windows:**
+```
+run_app.bat
+```
+
+**Linux/macOS:**
 ```bash
-# Start the web server
-python app.py
+./run_app.sh
+```
+
+#### From Prototype Directory
+
+```bash
+# Start the web server (when already in the prototype directory)
+python app.py  # or python3 app.py on Linux/macOS
 
 # Then open http://localhost:5000 in your browser
+```
+
+### Environment Setup
+
+If you're experiencing issues with missing dependencies, use the setup scripts in the root directory:
+
+**Windows:**
+```
+setup.bat
+```
+
+**Linux/macOS:**
+```bash
+./setup.sh
 ```
 
 ## How It Works
