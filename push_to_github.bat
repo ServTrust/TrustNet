@@ -15,7 +15,7 @@ if %errorlevel% neq 0 (
 )
 
 :: Force push to overwrite any existing content
-git push -f origin master
+git push -f origin main
 
 echo Done!
 pause
