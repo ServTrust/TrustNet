@@ -44,3 +44,5 @@ ENV/
 # OS specific
 .DS_Store
 Thumbs.db
+TrustNet/
+test_access/
