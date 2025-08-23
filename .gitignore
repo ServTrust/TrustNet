@@ -49,3 +49,4 @@ ENV/
 Thumbs.db
 TrustNet/
 test_access/
+*.zip
