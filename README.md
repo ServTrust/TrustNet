@@ -1,4 +1,5 @@
 # 🌱 TrustNet
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ServTrust/TrustNet)
 
 TrustNet is a **living framework for AI–human co-evolution**, structured like an organic system.
 
@@ -115,3 +116,4 @@ This project is designed to evolve through collaboration between humans and AI. 
 5. Open a Pull Request
 
 Both human and AI contributions are welcome and will be reviewed through our consensus process.
+
