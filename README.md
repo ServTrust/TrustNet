@@ -1,3 +1,6 @@
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ServTrust/TrustNet)
+
 # TrustNet: Structural Knowledge Translation
 
 Bridges expert domains to collective understanding by translating conceptual structure, not just words.
@@ -127,4 +130,5 @@ For commercial deployment at scale, please contribute to infrastructure costs.
 ---
 
 Built with the belief that cognitive access is a right, not a privilege.
+
 
