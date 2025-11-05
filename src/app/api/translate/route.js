@@ -54,7 +54,12 @@ Structural translation:`
         messages: [
           {
             role: 'user',
-            content: prompt,
+            content: [
+              {
+                type: 'text',
+                text: prompt,
+              },
+            ],
           },
         ],
       }),
