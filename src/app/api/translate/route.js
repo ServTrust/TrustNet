@@ -58,20 +58,28 @@ Structural translation:`
     })
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}))
-      throw new Error(errorData.error?.message || 'API request failed')
+      const text = await response.text().catch(() => '')
+      console.error('Anthropic API error status:', response.status, text)
+      return NextResponse.json(
+        { error: 'Upstream error', status: response.status, details: text?.slice(0, 2000) },
+        { status: 502 }
+      )
     }
 
     const data = await response.json()
-    const translation = data.content[0]?.text || 'Translation failed'
+    const translation = data?.content?.[0]?.text
+    if (!translation) {
+      console.error('Unexpected Anthropic response:', JSON.stringify(data).slice(0, 2000))
+      return NextResponse.json(
+        { error: 'Unexpected API response', details: data },
+        { status: 502 }
+      )
+    }
 
     return NextResponse.json({ translation })
   } catch (error) {
     console.error('Translation error:', error)
-    return NextResponse.json(
-      { error: error.message || 'Translation failed' },
-      { status: 500 }
-    )
+    return NextResponse.json({ error: error?.message || 'Translation failed' }, { status: 500 })
   }
 }
 
