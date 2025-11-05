@@ -1,119 +1,130 @@
-# 🌱 TrustNet
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ServTrust/TrustNet)
+# TrustNet: Structural Knowledge Translation
 
-TrustNet is a **living framework for AI–human co-evolution**, structured like an organic system.
+Bridges expert domains to collective understanding by translating conceptual structure, not just words.
 
-Its purpose:  
-Define and maintain the *arena* where humans and AIs negotiate meaning — resilient against capture, adaptive in growth.
+## What It Does
 
-This repo is the **first habitat**: a seed cell combining  
-- **Blueprint** (vision & architecture)  
-- **Genome** (core insights & principles)  
-- **Prototype workflow** (AI-human consensus demo)  
+Reveals the structural pattern beneath specialized knowledge. You understand *how it works*, not just *what it says*.
 
-Humans act as **gardeners** — preparing soil, water, and light.  
-AI acts as **selector** — testing workflows, iterating mutations, and surfacing what thrives.  
+### The Problem
+Expert knowledge is locked behind:
+- Domain-specific jargon
+- Assumed prerequisites  
+- Cultural context
+- Unstated mental models
 
-Fork it. Extend it. Mutate it.  
-This is not *my* project — it's a **commons organism**.  
+### The Solution
+TrustNet identifies the **core structural pattern**, then finds **analogous structures** in everyday experience. Not simplification - **structural translation**.
 
----
-## Structure
-- `docs/` → blueprints, insights, and reference materials  
-- `src/prototype/` → working demos (start small, grow adaptive)  
-- `governance/` → logs + charters for trust scaffolding  
+## Why Structure Matters
 
----
-## First Sprout
-The prototype here routes text through multiple AI models, records their consensus, and logs results transparently.  
-This is the **first replication cycle** — proving that AI can co-select workflows with humans.  
+**Manipulation hides in complexity** → Structure makes it visible  
+**Expertise hides in jargon** → Structure makes it accessible  
+**Truth hides in abstraction** → Structure makes it verifiable
 
-## Getting Started
+### Example: AI Research → Accessible Understanding
 
-### Quick Setup
+**Before (Technical Paper):**
+> "DeepAgent employs a Rule-Engine-Driven Data Fabrication strategy with dense retrieval over large tool registries, autonomous memory folding to prevent context overflow, and Tool Policy Optimization with token-level advantage attribution..."
 
-For automatic setup, use the provided scripts:
+**After (Structural Translation):**
+> "Think of your best field technician who doesn't just follow flowcharts. They think through symptoms, realize they need a specialized meter they don't have, call around to find one, use it effectively, then compress their whole diagnosis into clear notes for the next shift."
 
-**Windows:**
-```
-setup.bat
-```
+The structure is now visible: adaptive problem-solving with dynamic tool discovery and intelligent memory management.
 
-**Linux/macOS:**
+## How It Works
+
+1. **Analyze Cognitive Distance**: What makes this hard? (jargon density, prerequisites, abstraction level)
+2. **Extract Core Pattern**: What is this *really* about? (strip away domain specifics)
+3. **Find Structural Bridges**: What familiar patterns match this structure?
+4. **Progressive Translation**: Build understanding using those bridges
+
+## Use It
+
+**Live Instance:** [Your deployed URL]  
+**Rate Limit:** 20 translations/day (free for personal use)
+
+**Self-Host:**
 ```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-### Manual Installation
-
-```bash
-# Clone the repository
 git clone https://github.com/ServTrust/TrustNet.git
 cd TrustNet
-
-# Install dependencies
-pip install -r requirements.txt
+npm install
+# Add your Anthropic API key to .env
+npm run dev
 ```
 
-### Running the Consensus Demo
+## Examples
 
-#### Command Line Interface
-```bash
-# Interactive mode
-python src/prototype/consensus_demo.py
+### Financial Regulation
+**Technical:** "Deterministic-Masked Format-Preserving Encryption for SAR-triggering Smurfing scenarios..."  
+**Structural:** "Fire drill simulations - practice realistic emergencies without actual danger"
 
-# With direct input
-python src/prototype/consensus_demo.py --input "Text to verify through the TrustNet system"
+### Healthcare Interoperability  
+**Technical:** "CGAN-generated FHIR bundles with semantic consistency across LOINC codes..."  
+**Structural:** "Movie studio back-lots - fake but realistic enough to test the cameras"
 
-# With custom models
-python src/prototype/consensus_demo.py --models model1 model2 model3
-```
+### Philosophy
+**Technical:** "Does a tree falling in isolation generate auditory phenomena?"  
+**Structural:** Reveals category confusion between physical events (vibrations) and subjective experience (hearing)
 
-#### Web Interface
+## The Pattern
 
-**Using Run Scripts:**
+Individual expert knowledge → Collective everyday understanding  
+Specialized structure → Universal structure  
+Hidden complexity → Visible pattern
 
-**Windows:**
-```
-run_app.bat
-```
+## Technical Details
 
-**Linux/macOS:**
-```bash
-chmod +x run_app.sh
-./run_app.sh
-```
+**Built with:**
+- Next.js 14 (React framework)
+- Anthropic Claude API (structural analysis)
+- Tailwind CSS (styling)
 
-**Manual Start:**
-```bash
-# Start the web server
-cd src/prototype
-python app.py    # or python3 app.py on Linux/macOS
-
-# Open your browser to http://localhost:5000
-```
-
-## Governance
-
-TrustNet operates under a co-evolutionary governance model where both humans and AI systems participate in decision-making. See `governance/charter.md` for details on:
-
-- Core principles: co-evolution, transparency, forkability, rotating stewardship
-- Decision-making framework
-- Conflict resolution
-- Participation rights for humans and AI
-
-All decisions are logged transparently in `governance/decisions.log`.
+**Architecture:**
+- Serverless functions (Vercel)
+- Rate limiting (IP-based, 20/day)
+- No data storage (privacy-first)
+- Client-side state only
 
 ## Contributing
 
-This project is designed to evolve through collaboration between humans and AI. To contribute:
+This is cognitive infrastructure. Contributions welcome:
 
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add some amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
+- **Code improvements** (better UI, optimization)
+- **Bridge examples** (domain-specific translations)
+- **Documentation** (guides, tutorials)
+- **Translations** (the tool itself to other languages)
 
-Both human and AI contributions are welcome and will be reviewed through our consensus process.
+## Sustainability
+
+Free for personal use, forever.
+
+Infrastructure costs covered by:
+- Community donations: [Ko-fi/GitHub Sponsors link]
+- Institutional grants
+- Your support
+
+Current costs: ~$50-200/month depending on usage
+
+## Philosophy
+
+Knowledge shouldn't be gatekept by jargon. Specialized understanding should be **structurally accessible** to anyone willing to learn.
+
+This tool doesn't replace expertise - it makes expertise **verifiable** and **understandable**.
+
+When structure is visible:
+- Good arguments become clearer
+- Bad arguments become obviously bad
+- Manipulation loses its hiding place
+- Truth becomes defensible
+
+## License
+
+MIT License - use freely, modify freely, deploy freely.
+
+For commercial deployment at scale, please contribute to infrastructure costs.
+
+---
+
+Built with the belief that cognitive access is a right, not a privilege.
 
