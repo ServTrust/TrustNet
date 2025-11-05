@@ -49,17 +49,12 @@ Structural translation:`
         'anthropic-version': '2023-06-01',
       },
       body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-3-5-sonnet-20241022',
         max_tokens: 2048,
         messages: [
           {
             role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt,
-              },
-            ],
+            content: prompt,
           },
         ],
       }),
