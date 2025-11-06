@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 
+// Force fresh build - Updated: 2025-11-06 01:08 UTC
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
