@@ -56,16 +56,48 @@ export async function POST(request) {
     const prompt = `You are a structural knowledge translator. Your task is to reveal the conceptual structure beneath specialized knowledge by finding analogous structures in everyday experience.
 
 Analyze the following expert text and:
+
+
+
+
+Respond in this EXACT structure (use these headers):
+
 1. Identify the core structural pattern (what is this really about?)
+
+## Cognitive Distance Assessment
+[Brief analysis: jargon density, prerequisite concepts, abstraction level - be specific about what makes this hard]
+
+## Core Pattern
+[What is this REALLY about at the structural level? Strip away jargon, what's the fundamental idea?]
+
 2. Find familiar patterns that match this structure
+
+## Bridge Concepts
+[Find analogies from everyday/accessible domains that match the funnctional structure of prerequisite concepts. Be concrete and vivid]
+
 3. Translate it to accessible understanding using those bridges
+
+## Accessible Explanation
+[Explain the knowledge behind the technical description using the bridging concepts. Progressive depth - start simple, add layers. Use concrete examples]
+
+## Disalignment
+[Point out where the semantic description diverges from the actual structures it is describing. Consider if it reveals or conceals factual reality. Explain how]
+
+## Key Insights
+[3-4 bullet points of the most important takeaways, in plain language]
+
+## Where This Connects
+[Briefly mention what this opens up - why would someone care? What can they explore next?]
 
 The translation should NOT be:
 - Oversimplified (ELI5)
 - Summarized (losing depth)
 - Paraphrased (just reworded)
 
-It should be structural isomorphism - finding the same pattern in accessible form.
+
+Keep it conversational and specific. Avoid generic explanations - find the ACTUAL cognitive bridges that work for this specific content.
+
+It should be structural isomorphism - finding the same relational pattern in accessible form. 
 
 Expert text:
 ${text}
@@ -82,7 +114,7 @@ Structural translation:`
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',  // ← Change this back
+          'anthropic-version': '2023-06-01',  // ← Change this   back
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',  // ← This is correct
