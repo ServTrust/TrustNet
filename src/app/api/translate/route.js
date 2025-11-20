@@ -237,7 +237,7 @@ async function callAnthropicAPI({ prompt, apiKey, requestId }) {
 }
 
 async function callGeminiAPI({ prompt, apiKey, requestId }) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${SUPPORTED_MODELS.gemini.id}:generateContent?key=${apiKey}`
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${SUPPORTED_MODELS.gemini.id}:generateContent`
 
   let response
   try {
@@ -245,6 +245,7 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey,
       },
       body: JSON.stringify({
         contents: [
@@ -275,9 +276,15 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
         500
       )}`
     )
+    let details = errorText
+    try {
+      const parsed = JSON.parse(errorText)
+      details = parsed?.error?.message || parsed?.error || errorText
+    } catch {}
+
     throw new Error(
       `Gemini API error (${response.status} ${response.statusText}): ${
-        errorText?.slice(0, 1000) || 'No error details available'
+        typeof details === 'string' ? details.slice(0, 1000) : JSON.stringify(details).slice(0, 1000)
       }`
     )
   }

@@ -45,7 +45,7 @@ export default function CognitiveBridge() {
           const err = await response.json()
           details = err?.error || err?.details || ''
         } catch {}
-        throw new Error(details ? `Translation failed: ${details}` : 'Translation failed')
+        throw new Error(details || 'Translation failed')
       }
 
       const data = await response.json()
