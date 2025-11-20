@@ -4,6 +4,17 @@ import { NextResponse } from 'next/server'
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
 
+const SUPPORTED_MODELS = {
+  anthropic: {
+    name: 'Anthropic Claude',
+    id: 'claude-sonnet-4-20250514',
+  },
+  gemini: {
+    name: 'Google Gemini',
+    id: 'gemini-1.5-pro-latest',
+  },
+}
+
 export async function POST(request) {
   const requestId = Date.now().toString(36) + Math.random().toString(36).substr(2)
   console.log(`[${requestId}] Translation request started`)
@@ -11,10 +22,14 @@ export async function POST(request) {
   try {
     // Step 1: Parse request body
     let text
+    let model = 'anthropic'
     try {
       const body = await request.json()
       text = body.text
-      console.log(`[${requestId}] Request body parsed, text length: ${text?.length || 0}`)
+      model = body.model && SUPPORTED_MODELS[body.model] ? body.model : 'anthropic'
+      console.log(
+        `[${requestId}] Request body parsed, text length: ${text?.length || 0}, model: ${model}`
+      )
     } catch (parseError) {
       console.error(`[${requestId}] Failed to parse request body:`, parseError)
       return NextResponse.json(
@@ -32,19 +47,26 @@ export async function POST(request) {
       )
     }
 
-    // Step 3: Check API key
-    const apiKey = process.env.ANTHROPIC_API_KEY
-    console.log(`[${requestId}] API key check - exists: ${!!apiKey}, length: ${apiKey?.length || 0}`)
-    
+    // Step 3: Prepare API configuration
+    const apiKey =
+      model === 'gemini' ? process.env.GEMINI_API_KEY : process.env.ANTHROPIC_API_KEY
+    console.log(
+      `[${requestId}] ${model} API key check - exists: ${!!apiKey}, length: ${apiKey?.length || 0}`
+    )
+
     if (!apiKey) {
-      console.error(`[${requestId}] ANTHROPIC_API_KEY environment variable is not set`)
+      const missingVar = model === 'gemini' ? 'GEMINI_API_KEY' : 'ANTHROPIC_API_KEY'
+      console.error(`[${requestId}] ${missingVar} environment variable is not set`)
       return NextResponse.json(
-        { error: 'API key not configured', details: 'ANTHROPIC_API_KEY environment variable is missing' },
+        {
+          error: 'API key not configured',
+          details: `${missingVar} environment variable is missing`,
+        },
         { status: 500 }
       )
     }
 
-    if (!apiKey.startsWith('sk-ant-')) {
+    if (model === 'anthropic' && !apiKey.startsWith('sk-ant-')) {
       console.error(`[${requestId}] API key format appears invalid (should start with sk-ant-)`)
       return NextResponse.json(
         { error: 'API key configuration error', details: 'API key format appears invalid' },
@@ -104,94 +126,13 @@ ${text}
 
 Structural translation:`
 
-    console.log(`[${requestId}] Prompt prepared, calling Anthropic API...`)
+    console.log(`[${requestId}] Prompt prepared, calling ${SUPPORTED_MODELS[model].name} API...`)
 
-    // Step 5: Call Anthropic API
-    let response
-    try {
-      response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',  // ← Change this   back
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',  // ← This is correct
-          max_tokens: 2048,
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-        }),
-      })
-      console.log(`[${requestId}] Anthropic API response received, status: ${response.status}`)
-    } catch (fetchError) {
-      console.error(`[${requestId}] Fetch error calling Anthropic API:`, fetchError)
-      return NextResponse.json(
-        { 
-          error: 'Failed to connect to Anthropic API', 
-          details: fetchError.message,
-          type: fetchError.name 
-        },
-        { status: 502 }
-      )
-    }
-
-    // Step 6: Check response status
-    if (!response.ok) {
-      let errorText = ''
-      let errorData = null
-      
-      try {
-        errorText = await response.text()
-        console.error(`[${requestId}] Anthropic API error - Status: ${response.status}, Body: ${errorText.slice(0, 500)}`)
-        
-        try {
-          errorData = JSON.parse(errorText)
-        } catch {}
-      } catch (readError) {
-        console.error(`[${requestId}] Failed to read error response:`, readError)
-      }
-
-      return NextResponse.json(
-        { 
-          error: 'Anthropic API error', 
-          status: response.status,
-          statusText: response.statusText,
-          details: errorData || errorText?.slice(0, 1000) || 'No error details available'
-        },
-        { status: 502 }
-      )
-    }
-
-    // Step 7: Parse response
-    let data
-    try {
-      data = await response.json()
-      console.log(`[${requestId}] Response parsed successfully`)
-    } catch (jsonError) {
-      console.error(`[${requestId}] Failed to parse Anthropic response as JSON:`, jsonError)
-      return NextResponse.json(
-        { error: 'Invalid API response format', details: jsonError.message },
-        { status: 502 }
-      )
-    }
-
-    // Step 8: Extract translation
-    const translation = data?.content?.[0]?.text
-    if (!translation) {
-      console.error(`[${requestId}] No translation text in response. Response structure:`, JSON.stringify(data).slice(0, 500))
-      return NextResponse.json(
-        { 
-          error: 'Unexpected API response structure', 
-          details: 'No translation text found in response',
-          responsePreview: JSON.stringify(data).slice(0, 200)
-        },
-        { status: 502 }
-      )
+    let translation
+    if (model === 'gemini') {
+      translation = await callGeminiAPI({ prompt, apiKey, requestId })
+    } else {
+      translation = await callAnthropicAPI({ prompt, apiKey, requestId })
     }
 
     console.log(`[${requestId}] Translation successful, length: ${translation.length}`)
@@ -215,4 +156,151 @@ Structural translation:`
       { status: 500 }
     )
   }
+}
+
+async function callAnthropicAPI({ prompt, apiKey, requestId }) {
+  // Step 5: Call Anthropic API
+  let response
+  try {
+    response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: SUPPORTED_MODELS.anthropic.id,
+        max_tokens: 2048,
+        messages: [
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+      }),
+    })
+    console.log(`[${requestId}] Anthropic API response received, status: ${response.status}`)
+  } catch (fetchError) {
+    console.error(`[${requestId}] Fetch error calling Anthropic API:`, fetchError)
+    throw new Error(`Failed to connect to Anthropic API: ${fetchError.message}`)
+  }
+
+  // Step 6: Check response status
+  if (!response.ok) {
+    let errorText = ''
+    let errorData = null
+
+    try {
+      errorText = await response.text()
+      console.error(
+        `[${requestId}] Anthropic API error - Status: ${response.status}, Body: ${errorText.slice(
+          0,
+          500
+        )}`
+      )
+
+      try {
+        errorData = JSON.parse(errorText)
+      } catch {}
+    } catch (readError) {
+      console.error(`[${requestId}] Failed to read error response:`, readError)
+    }
+
+    throw new Error(
+      `Anthropic API error (${response.status} ${response.statusText}): ${
+        errorData || errorText?.slice(0, 1000) || 'No error details available'
+      }`
+    )
+  }
+
+  // Step 7: Parse response
+  let data
+  try {
+    data = await response.json()
+    console.log(`[${requestId}] Anthropic response parsed successfully`)
+  } catch (jsonError) {
+    console.error(`[${requestId}] Failed to parse Anthropic response as JSON:`, jsonError)
+    throw new Error(`Invalid Anthropic API response format: ${jsonError.message}`)
+  }
+
+  const translation = data?.content?.[0]?.text
+  if (!translation) {
+    console.error(
+      `[${requestId}] No translation text in response. Response structure:`,
+      JSON.stringify(data).slice(0, 500)
+    )
+    throw new Error('Unexpected Anthropic API response structure: no translation text found')
+  }
+
+  return translation
+}
+
+async function callGeminiAPI({ prompt, apiKey, requestId }) {
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${SUPPORTED_MODELS.gemini.id}:generateContent?key=${apiKey}`
+
+  let response
+  try {
+    response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: prompt }],
+          },
+        ],
+        generationConfig: {
+          maxOutputTokens: 2048,
+        },
+      }),
+    })
+    console.log(`[${requestId}] Gemini API response received, status: ${response.status}`)
+  } catch (fetchError) {
+    console.error(`[${requestId}] Fetch error calling Gemini API:`, fetchError)
+    throw new Error(`Failed to connect to Gemini API: ${fetchError.message}`)
+  }
+
+  if (!response.ok) {
+    let errorText = ''
+    try {
+      errorText = await response.text()
+    } catch {}
+    console.error(
+      `[${requestId}] Gemini API error - Status: ${response.status}, Body: ${errorText?.slice(
+        0,
+        500
+      )}`
+    )
+    throw new Error(
+      `Gemini API error (${response.status} ${response.statusText}): ${
+        errorText?.slice(0, 1000) || 'No error details available'
+      }`
+    )
+  }
+
+  let data
+  try {
+    data = await response.json()
+    console.log(`[${requestId}] Gemini response parsed successfully`)
+  } catch (jsonError) {
+    console.error(`[${requestId}] Failed to parse Gemini response as JSON:`, jsonError)
+    throw new Error(`Invalid Gemini API response format: ${jsonError.message}`)
+  }
+
+  const translation =
+    data?.candidates?.[0]?.content?.parts?.map((part) => part.text).join('\n\n') ?? ''
+
+  if (!translation) {
+    console.error(
+      `[${requestId}] No translation text in Gemini response. Response structure:`,
+      JSON.stringify(data).slice(0, 500)
+    )
+    throw new Error('Unexpected Gemini API response structure: no translation text found')
+  }
+
+  return translation
 }

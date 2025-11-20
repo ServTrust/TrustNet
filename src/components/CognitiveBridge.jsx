@@ -8,6 +8,20 @@ export default function CognitiveBridge() {
   const [output, setOutput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+  const [model, setModel] = useState('anthropic')
+
+  const modelOptions = [
+    {
+      value: 'anthropic',
+      label: 'Anthropic Claude',
+      helper: 'Best for nuanced reasoning and longer outputs.',
+    },
+    {
+      value: 'gemini',
+      label: 'Google Gemini',
+      helper: 'Great for faster drafts and multilingual inputs.',
+    },
+  ]
 
   const handleTranslate = async () => {
     if (!input.trim()) return
@@ -22,7 +36,7 @@ export default function CognitiveBridge() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: input }),
+        body: JSON.stringify({ text: input, model }),
       })
 
       if (!response.ok) {
@@ -59,6 +73,40 @@ export default function CognitiveBridge() {
         </header>
 
         <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
+          <div>
+            <p className="block text-sm font-medium text-gray-700 mb-2">Choose model</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {modelOptions.map((option) => {
+                const isSelected = model === option.value
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setModel(option.value)}
+                    className={`text-left border rounded-lg p-3 transition-all ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-50 shadow-sm'
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="font-semibold text-gray-900">{option.label}</span>
+                      <span
+                        className={`w-4 h-4 rounded-full border ${
+                          isSelected
+                            ? 'border-blue-600 bg-blue-600'
+                            : 'border-gray-300 bg-white'
+                        }`}
+                        aria-hidden="true"
+                      />
+                    </div>
+                    <p className="text-sm text-gray-600 mt-1">{option.helper}</p>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <div>
             <label htmlFor="input" className="block text-sm font-medium text-gray-700 mb-2">
               Expert Knowledge Input
