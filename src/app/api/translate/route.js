@@ -255,7 +255,7 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
           },
         ],
         generationConfig: {
-          maxOutputTokens: 2048,
+          maxOutputTokens: 8192,
         },
       }),
     })
@@ -309,8 +309,9 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
   )
 
   // Check for blocked content or other issues
-  if (data?.candidates?.[0]?.finishReason) {
-    const finishReason = data.candidates[0].finishReason
+  const candidate = data?.candidates?.[0]
+  if (candidate?.finishReason) {
+    const finishReason = candidate.finishReason
     if (finishReason !== 'STOP') {
       console.warn(`[${requestId}] Gemini finish reason: ${finishReason}`)
       if (finishReason === 'SAFETY') {
@@ -318,11 +319,25 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
           'Content was blocked by Gemini safety filters. Try rephrasing your input.'
         )
       }
+      if (finishReason === 'MAX_TOKENS') {
+        // Try to extract partial content even if truncated
+        const partialContent =
+          candidate?.content?.parts?.map((part) => part.text).join('\n\n') ?? ''
+        if (partialContent) {
+          console.warn(
+            `[${requestId}] Response was truncated at token limit, but returning partial content`
+          )
+          return partialContent + '\n\n[Note: Response was truncated due to length limit]'
+        }
+        throw new Error(
+          'Response exceeded maximum token limit. The translation is too long. Try shortening your input or splitting it into smaller parts.'
+        )
+      }
     }
   }
 
   const translation =
-    data?.candidates?.[0]?.content?.parts?.map((part) => part.text).join('\n\n') ?? ''
+    candidate?.content?.parts?.map((part) => part.text).join('\n\n') ?? ''
 
   if (!translation) {
     console.error(
