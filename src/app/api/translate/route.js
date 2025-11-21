@@ -237,7 +237,8 @@ async function callAnthropicAPI({ prompt, apiKey, requestId }) {
 }
 
 async function callGeminiAPI({ prompt, apiKey, requestId }) {
-  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${SUPPORTED_MODELS.gemini.id}:generateContent`
+  // Try using query parameter instead of header (more reliable for Gemini)
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${SUPPORTED_MODELS.gemini.id}:generateContent?key=${encodeURIComponent(apiKey)}`
 
   let response
   try {
@@ -245,7 +246,6 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-goog-api-key': apiKey,
       },
       body: JSON.stringify({
         contents: [
@@ -265,37 +265,60 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
     throw new Error(`Failed to connect to Gemini API: ${fetchError.message}`)
   }
 
+  // Read response text first (can only read once)
+  let responseText = ''
+  try {
+    responseText = await response.text()
+    console.log(`[${requestId}] Gemini response text length: ${responseText.length}`)
+  } catch (readError) {
+    console.error(`[${requestId}] Failed to read Gemini response:`, readError)
+    throw new Error(`Failed to read Gemini API response: ${readError.message}`)
+  }
+
   if (!response.ok) {
-    let errorText = ''
-    try {
-      errorText = await response.text()
-    } catch {}
     console.error(
-      `[${requestId}] Gemini API error - Status: ${response.status}, Body: ${errorText?.slice(
-        0,
-        500
-      )}`
+      `[${requestId}] Gemini API error - Status: ${response.status}, Body: ${responseText.slice(0, 1000)}`
     )
-    let details = errorText
+    let details = responseText
     try {
-      const parsed = JSON.parse(errorText)
-      details = parsed?.error?.message || parsed?.error || errorText
+      const parsed = JSON.parse(responseText)
+      details = parsed?.error?.message || parsed?.error?.details || parsed?.error || responseText
     } catch {}
 
-    throw new Error(
-      `Gemini API error (${response.status} ${response.statusText}): ${
-        typeof details === 'string' ? details.slice(0, 1000) : JSON.stringify(details).slice(0, 1000)
-      }`
-    )
+    const errorMessage =
+      typeof details === 'string' ? details.slice(0, 1000) : JSON.stringify(details).slice(0, 1000)
+    throw new Error(`Gemini API error (${response.status} ${response.statusText}): ${errorMessage}`)
   }
 
   let data
   try {
-    data = await response.json()
-    console.log(`[${requestId}] Gemini response parsed successfully`)
+    data = JSON.parse(responseText)
+    console.log(`[${requestId}] Gemini response parsed successfully, keys:`, Object.keys(data))
   } catch (jsonError) {
-    console.error(`[${requestId}] Failed to parse Gemini response as JSON:`, jsonError)
+    console.error(
+      `[${requestId}] Failed to parse Gemini response as JSON. Response preview:`,
+      responseText.slice(0, 500)
+    )
     throw new Error(`Invalid Gemini API response format: ${jsonError.message}`)
+  }
+
+  // Log full response structure for debugging
+  console.log(
+    `[${requestId}] Gemini response structure:`,
+    JSON.stringify(data).slice(0, 1000)
+  )
+
+  // Check for blocked content or other issues
+  if (data?.candidates?.[0]?.finishReason) {
+    const finishReason = data.candidates[0].finishReason
+    if (finishReason !== 'STOP') {
+      console.warn(`[${requestId}] Gemini finish reason: ${finishReason}`)
+      if (finishReason === 'SAFETY') {
+        throw new Error(
+          'Content was blocked by Gemini safety filters. Try rephrasing your input.'
+        )
+      }
+    }
   }
 
   const translation =
@@ -303,10 +326,12 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
 
   if (!translation) {
     console.error(
-      `[${requestId}] No translation text in Gemini response. Response structure:`,
-      JSON.stringify(data).slice(0, 500)
+      `[${requestId}] No translation text in Gemini response. Full response:`,
+      JSON.stringify(data, null, 2)
     )
-    throw new Error('Unexpected Gemini API response structure: no translation text found')
+    throw new Error(
+      `Unexpected Gemini API response structure: no translation text found. Response: ${JSON.stringify(data).slice(0, 500)}`
+    )
   }
 
   return translation
