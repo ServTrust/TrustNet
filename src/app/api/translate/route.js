@@ -11,7 +11,7 @@ const SUPPORTED_MODELS = {
   },
   gemini: {
     name: 'Google Gemini',
-    id: 'gemini-1.5-pro-latest',
+    id: 'gemini-2.5-pro',
   },
 }
 
