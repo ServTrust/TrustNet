@@ -44,13 +44,22 @@ export default function CognitiveBridge() {
         try {
           const err = await response.json()
           details = err?.error || err?.details || ''
-        } catch {}
+        } catch (parseErr) {
+          console.error('Failed to parse error response:', parseErr)
+          const text = await response.text()
+          console.error('Error response text:', text.slice(0, 500))
+        }
         throw new Error(details || 'Translation failed')
       }
 
       const data = await response.json()
+      if (!data.translation) {
+        console.error('No translation in response:', data)
+        throw new Error('No translation received from server')
+      }
       setOutput(data.translation)
     } catch (err) {
+      console.error('Translation error:', err)
       setError(err.message || 'An error occurred. Please try again.')
     } finally {
       setLoading(false)

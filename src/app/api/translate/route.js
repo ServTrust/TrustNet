@@ -102,7 +102,7 @@ Respond in this EXACT structure (use these headers):
 ## Accessible Explanation
 [Explain the knowledge behind the technical description using the bridging concepts. Progressive depth - start simple, add layers. Use concrete examples]
 
-## Disalignment
+## Dissonance
 [Point out where the semantic description diverges from the actual structures it is describing. Consider if it reveals or conceals factual reality. Explain how]
 
 ## Key Insights
@@ -135,8 +135,19 @@ Structural translation:`
       translation = await callAnthropicAPI({ prompt, apiKey, requestId })
     }
 
+    // Validate translation is a non-empty string
+    if (!translation || typeof translation !== 'string' || !translation.trim()) {
+      console.error(`[${requestId}] Invalid translation received:`, typeof translation, translation?.slice(0, 100))
+      throw new Error('Invalid translation received from API')
+    }
+
     console.log(`[${requestId}] Translation successful, length: ${translation.length}`)
-    return NextResponse.json({ translation })
+    return NextResponse.json({ translation }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+      },
+    })
 
   } catch (error) {
     console.error(`[${requestId}] Unexpected error:`, {
