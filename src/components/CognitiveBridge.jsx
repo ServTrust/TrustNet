@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Send, Loader2 } from 'lucide-react'
 
 export default function CognitiveBridge() {
@@ -8,7 +8,22 @@ export default function CognitiveBridge() {
   const [output, setOutput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [model, setModel] = useState('anthropic')
+  const [model, setModel] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('trustnet-model') || 'anthropic'
+    }
+    return 'anthropic'
+  })
+  const [targetDomain, setTargetDomain] = useState('')
+  const [userPrompt, setUserPrompt] = useState('')
+  const [context, setContext] = useState(null)
+
+  // Persist model choice to localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('trustnet-model', model)
+    }
+  }, [model])
 
   const modelOptions = [
     {
@@ -30,13 +45,21 @@ export default function CognitiveBridge() {
     setError(null)
     setOutput('')
 
+    let accumulatedTranslation = ''
+
     try {
       const response = await fetch('/api/translate', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ text: input, model }),
+        body: JSON.stringify({
+          text: input,
+          model,
+          targetDomain: targetDomain.trim() || null,
+          userPrompt: userPrompt.trim() || null,
+          context,
+        }),
       })
 
       if (!response.ok) {
@@ -52,12 +75,69 @@ export default function CognitiveBridge() {
         throw new Error(details || 'Translation failed')
       }
 
-      const data = await response.json()
-      if (!data.translation) {
-        console.error('No translation in response:', data)
-        throw new Error('No translation received from server')
+      if (!response.body) {
+        throw new Error('No response body from server')
       }
-      setOutput(data.translation)
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let currentEvent = ''
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || ''
+
+        for (const line of lines) {
+          if (line.startsWith('event: ')) {
+            currentEvent = line.slice(7).trim()
+            continue
+          }
+          if (line.startsWith('data: ')) {
+            const dataStr = line.slice(6)
+            try {
+              const data = JSON.parse(dataStr)
+              
+              if (currentEvent === 'chunk' && data.text) {
+                // Accumulate chunks
+                accumulatedTranslation += data.text
+                setOutput(accumulatedTranslation)
+              } else if (currentEvent === 'error') {
+                throw new Error(data.details || data.error || 'Translation failed')
+              } else if (currentEvent === 'done') {
+                // Translation complete
+                console.log('Translation stream completed')
+              }
+            } catch (e) {
+              // Skip invalid JSON
+              if (e.message.includes('Translation failed')) {
+                throw e
+              }
+            }
+            currentEvent = ''
+          }
+        }
+      }
+
+      // Update local context with final translation
+      if (accumulatedTranslation) {
+        setContext({
+          expertText: input,
+          targetDomain: targetDomain.trim() || null,
+          history: [
+            ...(context?.history || []),
+            {
+              model,
+              output: accumulatedTranslation,
+              timestamp: Date.now(),
+            },
+          ],
+        })
+      }
     } catch (err) {
       console.error('Translation error:', err)
       setError(err.message || 'An error occurred. Please try again.')
@@ -69,7 +149,24 @@ export default function CognitiveBridge() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <header className="text-center mb-12">
+        <header className="text-center mb-12 relative">
+          <div className="absolute top-0 right-0">
+            <label htmlFor="model-select" className="sr-only">
+              Choose inference model
+            </label>
+            <select
+              id="model-select"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              className="text-xs text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+            >
+              {modelOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             TrustNet
           </h1>
@@ -82,41 +179,30 @@ export default function CognitiveBridge() {
         </header>
 
         <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
-          <div>
-            <p className="block text-sm font-medium text-gray-700 mb-2">Choose model</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {modelOptions.map((option) => {
-                const isSelected = model === option.value
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setModel(option.value)}
-                    className={`text-left border rounded-lg p-3 transition-all ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-50 shadow-sm'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <span className="font-semibold text-gray-900">{option.label}</span>
-                      <span
-                        className={`w-4 h-4 rounded-full border ${
-                          isSelected
-                            ? 'border-blue-600 bg-blue-600'
-                            : 'border-gray-300 bg-white'
-                        }`}
-                        aria-hidden="true"
-                      />
-                    </div>
-                    <p className="text-sm text-gray-600 mt-1">{option.helper}</p>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
 
-          <div>
+          <div className="space-y-4">
+            <div>
+              <label
+                htmlFor="target-domain"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Optional target domain
+              </label>
+              <input
+                id="target-domain"
+                type="text"
+                value={targetDomain}
+                onChange={(e) => setTargetDomain(e.target.value)}
+                placeholder="e.g. parenting, cooking, small business, classroom, sports..."
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                If set, the translation will look for bridges in this world instead of general
+                everyday life.
+              </p>
+            </div>
+
+            <div>
             <label htmlFor="input" className="block text-sm font-medium text-gray-700 mb-2">
               Expert Knowledge Input
             </label>
@@ -127,6 +213,24 @@ export default function CognitiveBridge() {
               placeholder="Paste technical text, research papers, or specialized content here..."
               className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
             />
+          </div>
+
+            <div>
+              <label htmlFor="user-prompt" className="block text-sm font-medium text-gray-700 mb-1">
+                Optional question or focus
+              </label>
+              <input
+                id="user-prompt"
+                type="text"
+                value={userPrompt}
+                onChange={(e) => setUserPrompt(e.target.value)}
+                placeholder="e.g. focus on decision-making tradeoffs, or: compare to startup funding"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Use this for follow-up questions too; the previous translation is kept as context.
+              </p>
+            </div>
           </div>
 
           <button
