@@ -305,7 +305,24 @@ async function streamGeminiAPI({ prompt, apiKey, requestId, controller }) {
     })
 
     if (!response.ok) {
-      const errorText = await response.text()
+      // Read error response - for errors, body won't be used for streaming
+      let errorText = `HTTP ${response.status} ${response.statusText}`
+      try {
+        if (response.body) {
+          const reader = response.body.getReader()
+          const decoder = new TextDecoder()
+          let chunks = ''
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            chunks += decoder.decode(value, { stream: true })
+          }
+          errorText = chunks
+        }
+      } catch (e) {
+        console.error(`[${requestId}] Failed to read Gemini error response:`, e)
+      }
+      
       let errorData = errorText
       try {
         const parsed = JSON.parse(errorText)

@@ -62,20 +62,21 @@ export default function CognitiveBridge() {
         }),
       })
 
-      if (!response.ok) {
-        let details = ''
-        try {
-          const err = await response.json()
-          details = err?.error || err?.details || ''
-        } catch (parseErr) {
-          console.error('Failed to parse error response:', parseErr)
-          const text = await response.text()
-          console.error('Error response text:', text.slice(0, 500))
-        }
-        throw new Error(details || 'Translation failed')
-      }
-
       if (!response.body) {
+        // Handle non-streaming errors
+        if (!response.ok) {
+          let details = ''
+          try {
+            const text = await response.text()
+            try {
+              const err = JSON.parse(text)
+              details = err?.error || err?.details || ''
+            } catch {
+              details = text.slice(0, 500)
+            }
+          } catch {}
+          throw new Error(details || 'Translation failed')
+        }
         throw new Error('No response body from server')
       }
 
@@ -93,12 +94,26 @@ export default function CognitiveBridge() {
         buffer = lines.pop() || ''
 
         for (const line of lines) {
-          if (line.startsWith('event: ')) {
-            currentEvent = line.slice(7).trim()
+          const trimmed = line.trim()
+          if (!trimmed) continue // Skip empty lines
+          
+          if (trimmed.startsWith('event: ')) {
+            currentEvent = trimmed.slice(7).trim()
             continue
           }
-          if (line.startsWith('data: ')) {
-            const dataStr = line.slice(6)
+          if (trimmed.startsWith('data: ')) {
+            const dataStr = trimmed.slice(6).trim()
+            if (!dataStr || dataStr === '[DONE]') {
+              currentEvent = ''
+              continue
+            }
+            
+            // Only parse if it looks like JSON (starts with { or [)
+            if (!dataStr.startsWith('{') && !dataStr.startsWith('[')) {
+              currentEvent = ''
+              continue
+            }
+            
             try {
               const data = JSON.parse(dataStr)
               
@@ -113,8 +128,15 @@ export default function CognitiveBridge() {
                 console.log('Translation stream completed')
               }
             } catch (e) {
-              // Skip invalid JSON
-              if (e.message.includes('Translation failed')) {
+              // If it's our error, rethrow it
+              if (e.message && (e.message.includes('Translation failed') || e.message.includes('error'))) {
+                throw e
+              }
+              // Skip invalid JSON - log for debugging but don't break
+              if (e instanceof SyntaxError) {
+                console.warn('Skipping invalid SSE JSON:', dataStr.slice(0, 50))
+              } else {
+                // Re-throw non-JSON errors
                 throw e
               }
             }
