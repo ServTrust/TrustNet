@@ -68,23 +68,33 @@ export default function CognitiveBridge() {
       const fetchTime = Date.now() - startTime
       console.log(`Fetch completed in ${fetchTime}ms, status: ${response.status}, ok: ${response.ok}`)
 
+      // Read response as text first, then parse as JSON (can only read body once)
+      const responseText = await response.text()
+      console.log('Response text received, length:', responseText.length)
+
       if (!response.ok) {
         let details = ''
         try {
-          const err = await response.json()
+          const err = JSON.parse(responseText)
           details = err?.error || err?.details || ''
           console.error('Error response:', err)
         } catch (parseErr) {
-          console.error('Failed to parse error response:', parseErr)
-          const text = await response.text()
-          console.error('Error response text:', text.slice(0, 500))
+          console.error('Failed to parse error response as JSON:', parseErr)
+          details = responseText.slice(0, 200)
         }
         throw new Error(details || 'Translation failed')
       }
 
       console.log('Response OK, parsing JSON...')
-      const data = await response.json()
-      console.log('JSON parsed, keys:', Object.keys(data), 'has translation:', !!data.translation)
+      let data
+      try {
+        data = JSON.parse(responseText)
+        console.log('JSON parsed, keys:', Object.keys(data), 'has translation:', !!data.translation)
+      } catch (jsonErr) {
+        console.error('Failed to parse JSON response:', jsonErr)
+        console.error('Response text (first 500 chars):', responseText.slice(0, 500))
+        throw new Error(`Failed to parse server response: ${jsonErr.message}`)
+      }
       
       if (!data.translation) {
         console.error('No translation in response:', data)
