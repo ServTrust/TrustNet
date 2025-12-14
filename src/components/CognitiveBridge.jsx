@@ -36,7 +36,7 @@ export default function CognitiveBridge() {
     {
       value: 'gemini',
       label: 'Google Gemini',
-      helper: 'Great for faster drafts and multilingual inputs.',
+      helper: 'Flash model - fastest responses, great for quick drafts.',
     },
   ]
 

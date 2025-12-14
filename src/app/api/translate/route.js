@@ -11,7 +11,7 @@ const SUPPORTED_MODELS = {
   },
   gemini: {
     name: 'Google Gemini',
-    id: 'gemini-2.5-pro',
+    id: 'gemini-2.5-flash',
   },
 }
 
@@ -279,6 +279,14 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
   // Try using query parameter instead of header (more reliable for Gemini)
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${SUPPORTED_MODELS.gemini.id}:generateContent?key=${encodeURIComponent(apiKey)}`
 
+  console.log(`[${requestId}] Starting Gemini API fetch to: ${endpoint.replace(apiKey, '***')}`)
+  
+  // Add timeout to prevent hanging
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => {
+    controller.abort()
+  }, 60000) // 60 second timeout
+
   let response
   try {
     response = await fetch(endpoint, {
@@ -297,9 +305,16 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
           maxOutputTokens: 8192,
         },
       }),
+      signal: controller.signal,
     })
+    clearTimeout(timeoutId)
     console.log(`[${requestId}] Gemini API response received, status: ${response.status}`)
   } catch (fetchError) {
+    clearTimeout(timeoutId)
+    if (fetchError.name === 'AbortError') {
+      console.error(`[${requestId}] Gemini API request timed out after 60 seconds`)
+      throw new Error('Gemini API request timed out. The request took too long to complete.')
+    }
     console.error(`[${requestId}] Fetch error calling Gemini API:`, fetchError)
     throw new Error(`Failed to connect to Gemini API: ${fetchError.message}`)
   }
