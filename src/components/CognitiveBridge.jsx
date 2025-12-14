@@ -8,22 +8,24 @@ export default function CognitiveBridge() {
   const [output, setOutput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [model, setModel] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('trustnet-model') || 'anthropic'
-    }
-    return 'anthropic'
-  })
+  const [model, setModel] = useState('anthropic')
   const [targetDomain, setTargetDomain] = useState('')
   const [userPrompt, setUserPrompt] = useState('')
   const [context, setContext] = useState(null)
 
-  // Persist model choice to localStorage
+  // Load persisted model choice from localStorage
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('trustnet-model', model)
+    const savedModel = localStorage.getItem('trustnet-model')
+    if (savedModel && (savedModel === 'anthropic' || savedModel === 'gemini')) {
+      setModel(savedModel)
     }
-  }, [model])
+  }, [])
+
+  // Save model choice to localStorage when it changes
+  const handleModelChange = (newModel) => {
+    setModel(newModel)
+    localStorage.setItem('trustnet-model', newModel)
+  }
 
   const modelOptions = [
     {
@@ -45,8 +47,6 @@ export default function CognitiveBridge() {
     setError(null)
     setOutput('')
 
-    let accumulatedTranslation = ''
-
     try {
       const response = await fetch('/api/translate', {
         method: 'POST',
@@ -62,104 +62,38 @@ export default function CognitiveBridge() {
         }),
       })
 
-      if (!response.body) {
-        // Handle non-streaming errors
-        if (!response.ok) {
-          let details = ''
-          try {
-            const text = await response.text()
-            try {
-              const err = JSON.parse(text)
-              details = err?.error || err?.details || ''
-            } catch {
-              details = text.slice(0, 500)
-            }
-          } catch {}
-          throw new Error(details || 'Translation failed')
+      if (!response.ok) {
+        let details = ''
+        try {
+          const err = await response.json()
+          details = err?.error || err?.details || ''
+        } catch (parseErr) {
+          console.error('Failed to parse error response:', parseErr)
+          const text = await response.text()
+          console.error('Error response text:', text.slice(0, 500))
         }
-        throw new Error('No response body from server')
+        throw new Error(details || 'Translation failed')
       }
 
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ''
-      let currentEvent = ''
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split('\n')
-        buffer = lines.pop() || ''
-
-        for (const line of lines) {
-          const trimmed = line.trim()
-          if (!trimmed) continue // Skip empty lines
-          
-          if (trimmed.startsWith('event: ')) {
-            currentEvent = trimmed.slice(7).trim()
-            continue
-          }
-          if (trimmed.startsWith('data: ')) {
-            const dataStr = trimmed.slice(6).trim()
-            if (!dataStr || dataStr === '[DONE]') {
-              currentEvent = ''
-              continue
-            }
-            
-            // Only parse if it looks like JSON (starts with { or [)
-            if (!dataStr.startsWith('{') && !dataStr.startsWith('[')) {
-              currentEvent = ''
-              continue
-            }
-            
-            try {
-              const data = JSON.parse(dataStr)
-              
-              if (currentEvent === 'chunk' && data.text) {
-                // Accumulate chunks
-                accumulatedTranslation += data.text
-                setOutput(accumulatedTranslation)
-              } else if (currentEvent === 'error') {
-                throw new Error(data.details || data.error || 'Translation failed')
-              } else if (currentEvent === 'done') {
-                // Translation complete
-                console.log('Translation stream completed')
-              }
-            } catch (e) {
-              // If it's our error, rethrow it
-              if (e.message && (e.message.includes('Translation failed') || e.message.includes('error'))) {
-                throw e
-              }
-              // Skip invalid JSON - log for debugging but don't break
-              if (e instanceof SyntaxError) {
-                console.warn('Skipping invalid SSE JSON:', dataStr.slice(0, 50))
-              } else {
-                // Re-throw non-JSON errors
-                throw e
-              }
-            }
-            currentEvent = ''
-          }
-        }
+      const data = await response.json()
+      if (!data.translation) {
+        console.error('No translation in response:', data)
+        throw new Error('No translation received from server')
       }
-
-      // Update local context with final translation
-      if (accumulatedTranslation) {
-        setContext({
-          expertText: input,
-          targetDomain: targetDomain.trim() || null,
-          history: [
-            ...(context?.history || []),
-            {
-              model,
-              output: accumulatedTranslation,
-              timestamp: Date.now(),
-            },
-          ],
-        })
-      }
+      setOutput(data.translation)
+      // Update local context so follow-up questions can refer back
+      setContext({
+        expertText: input,
+        targetDomain: targetDomain.trim() || null,
+        history: [
+          ...(context?.history || []),
+          {
+            model,
+            output: data.translation,
+            timestamp: Date.now(),
+          },
+        ],
+      })
     } catch (err) {
       console.error('Translation error:', err)
       setError(err.message || 'An error occurred. Please try again.')
@@ -171,24 +105,7 @@ export default function CognitiveBridge() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="container mx-auto px-4 py-12 max-w-4xl">
-        <header className="text-center mb-12 relative">
-          <div className="absolute top-0 right-0">
-            <label htmlFor="model-select" className="sr-only">
-              Choose inference model
-            </label>
-            <select
-              id="model-select"
-              value={model}
-              onChange={(e) => setModel(e.target.value)}
-              className="text-xs text-gray-600 bg-white border border-gray-300 rounded px-2 py-1 focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-            >
-              {modelOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
+        <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
             TrustNet
           </h1>
@@ -201,7 +118,6 @@ export default function CognitiveBridge() {
         </header>
 
         <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
-
           <div className="space-y-4">
             <div>
               <label
@@ -253,6 +169,24 @@ export default function CognitiveBridge() {
                 Use this for follow-up questions too; the previous translation is kept as context.
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200">
+            <label htmlFor="model-select" className="text-xs text-gray-500">
+              Model:
+            </label>
+            <select
+              id="model-select"
+              value={model}
+              onChange={(e) => handleModelChange(e.target.value)}
+              className="text-xs text-gray-600 border border-gray-300 rounded px-2 py-1 bg-white hover:border-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            >
+              {modelOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <button

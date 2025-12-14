@@ -42,41 +42,6 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 3. **Find Structural Bridges**: What familiar patterns match this structure?
 4. **Progressive Translation**: Build understanding using those bridges
 
-## UI/UX Design Specs
-
-### Model Selection
-- **Location**: Small dropdown in top-right corner of header (minimal visual prominence)
-- **Persistence**: Model choice saved to `localStorage` and restored on page load
-- **Options**: Anthropic Claude (default) or Google Gemini
-- **Rationale**: Model choice is a technical detail, not a primary user decision
-
-### Input Fields
-1. **Optional Target Domain** (small text input)
-   - Allows users to specify a domain of expertise for bridge analogies
-   - Default: shared domain of ordinary experience
-   - Example: "parenting", "cooking", "small business", "classroom", "sports"
-   - Helper text explains it changes where analogies are drawn from
-
-2. **Expert Knowledge Input** (large textarea)
-   - Primary input field for technical/specialized content
-   - Placeholder guides users on what to paste
-
-3. **Optional Question or Focus** (small text input)
-   - For follow-up questions or specific focus areas
-   - Context-aware: previous translations are preserved for follow-ups
-   - Example: "focus on decision-making tradeoffs" or "compare to startup funding"
-
-### Context Preservation
-- Translation history maintained in client-side state
-- Follow-up questions automatically include prior context
-- Enables conversational refinement of translations
-
-### Future Direction
-- **Browser Extension**: Designed to eventually live as a browser extension
-  - Eliminates server timeout issues (direct API calls from browser)
-  - User manages their own API keys (privacy-first)
-  - No server infrastructure needed
-
 ## Use It
 
 **Live Instance:** [Your deployed URL]  
@@ -87,9 +52,7 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 git clone https://github.com/ServTrust/TrustNet.git
 cd TrustNet
 npm install
-# Add your API keys to .env:
-# ANTHROPIC_API_KEY=your_key_here
-# GEMINI_API_KEY=your_key_here
+# Add your Anthropic API key to .env
 npm run dev
 ```
 
@@ -117,17 +80,64 @@ Hidden complexity → Visible pattern
 
 **Built with:**
 - Next.js 14 (React framework)
-- Anthropic Claude API or Google Gemini API (structural analysis)
+- Anthropic Claude API (structural analysis)
 - Tailwind CSS (styling)
-- React hooks for state management and localStorage persistence
 
 **Architecture:**
 - Serverless functions (Vercel/Netlify)
-- Dual API support (Anthropic Claude, Google Gemini)
-- Model choice persisted in browser localStorage
-- Context preservation for follow-up questions
+- Rate limiting (IP-based, 20/day)
 - No data storage (privacy-first)
 - Client-side state only
+
+**API Support:**
+- Anthropic Claude API (primary)
+- Google Gemini API (alternative)
+- Model choice persisted in localStorage
+
+## Design Specifications
+
+### UI Layout & Hierarchy
+
+**Primary Focus:**
+- Expert Knowledge Input (large textarea) - main content area
+- Optional target domain input (small text field) - configures analogy domain
+- Optional question/focus input (small text field) - for follow-up questions and specific guidance
+
+**Secondary Elements:**
+- Model selector (small dropdown) - persistent, visually de-emphasized, located below inputs
+- Translate button - prominent call-to-action
+- Output display - formatted translation result
+
+### User Experience Features
+
+**Context Preservation:**
+- Translation history maintained in client-side state
+- Follow-up questions can reference previous translations
+- Target domain persists across conversation turns
+
+**Model Selection:**
+- Choice persisted in localStorage
+- Small dropdown selector (not prominent buttons)
+- Default: Anthropic Claude
+- Options: Anthropic Claude, Google Gemini
+
+**Target Domain Customization:**
+- Optional text input for user-defined expertise domain
+- Default: "shared everyday experience"
+- Examples: parenting, cooking, small business, classroom, sports
+- Guides the translation to find analogies in that specific domain
+
+**Follow-up Questions:**
+- Optional prompt input for additional guidance or questions
+- Previous translation context automatically included
+- Allows iterative refinement without re-entering expert text
+
+### Future Direction
+
+**Browser Extension:**
+- Tool designed to eventually live as browser extension
+- Direct API calls from extension (no server timeout limits)
+- User-provided API keys stored locally in extension
 
 ## Contributing
 
