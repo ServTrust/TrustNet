@@ -170,12 +170,15 @@ Structural translation:`
     }
 
     console.log(`[${requestId}] Translation successful, length: ${translation.length}`)
-    return NextResponse.json({ translation }, {
+    console.log(`[${requestId}] Returning response to client...`)
+    const response = NextResponse.json({ translation }, {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache',
       },
     })
+    console.log(`[${requestId}] Response object created, status: ${response.status}`)
+    return response
 
   } catch (error) {
     console.error(`[${requestId}] Unexpected error:`, {

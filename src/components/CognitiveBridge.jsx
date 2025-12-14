@@ -48,6 +48,9 @@ export default function CognitiveBridge() {
     setOutput('')
 
     try {
+      console.log('Starting translation request, model:', model)
+      const startTime = Date.now()
+      
       const response = await fetch('/api/translate', {
         method: 'POST',
         headers: {
@@ -62,11 +65,15 @@ export default function CognitiveBridge() {
         }),
       })
 
+      const fetchTime = Date.now() - startTime
+      console.log(`Fetch completed in ${fetchTime}ms, status: ${response.status}, ok: ${response.ok}`)
+
       if (!response.ok) {
         let details = ''
         try {
           const err = await response.json()
           details = err?.error || err?.details || ''
+          console.error('Error response:', err)
         } catch (parseErr) {
           console.error('Failed to parse error response:', parseErr)
           const text = await response.text()
@@ -75,11 +82,16 @@ export default function CognitiveBridge() {
         throw new Error(details || 'Translation failed')
       }
 
+      console.log('Response OK, parsing JSON...')
       const data = await response.json()
+      console.log('JSON parsed, keys:', Object.keys(data), 'has translation:', !!data.translation)
+      
       if (!data.translation) {
         console.error('No translation in response:', data)
         throw new Error('No translation received from server')
       }
+      
+      console.log('Setting output, length:', data.translation.length)
       setOutput(data.translation)
       // Update local context so follow-up questions can refer back
       setContext({
