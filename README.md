@@ -94,6 +94,15 @@ Hidden complexity → Visible pattern
 - Google Gemini API (alternative)
 - Model choice persisted in localStorage
 
+**Functional Constraints (MVP):**
+- **Text mode only:** Text input/output, no images or multimedia support
+- **Output limits:** 
+  - Anthropic Claude: 2,048 tokens (~1,500 words)
+  - Gemini Flash: 8,192 tokens (~6,000 words)
+- **Input size:** Recommended under 5,000 characters for optimal results
+- **Response time:** 15-30 seconds typical (subject to serverless function timeout limits)
+- **MVP status:** Core functionality only, some features may be limited
+
 ## Design Specifications
 
 ### UI Layout & Hierarchy

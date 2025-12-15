@@ -1,12 +1,13 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Send, Loader2 } from 'lucide-react'
+import { Send, Loader2, X } from 'lucide-react'
 
 export default function CognitiveBridge() {
   const [input, setInput] = useState('')
   const [output, setOutput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [loadingStatus, setLoadingStatus] = useState('')
   const [error, setError] = useState(null)
   const [model, setModel] = useState('anthropic')
   const [targetDomain, setTargetDomain] = useState('')
@@ -25,6 +26,16 @@ export default function CognitiveBridge() {
   const handleModelChange = (newModel) => {
     setModel(newModel)
     localStorage.setItem('trustnet-model', newModel)
+  }
+
+  // Clear all input fields and reset state
+  const handleClear = () => {
+    setInput('')
+    setOutput('')
+    setError(null)
+    setTargetDomain('')
+    setUserPrompt('')
+    setContext(null)
   }
 
   const modelOptions = [
@@ -46,6 +57,7 @@ export default function CognitiveBridge() {
     setLoading(true)
     setError(null)
     setOutput('')
+    setLoadingStatus('Sending request to server...')
 
     try {
       console.log('Starting translation request, model:', model)
@@ -67,10 +79,12 @@ export default function CognitiveBridge() {
 
       const fetchTime = Date.now() - startTime
       console.log(`Fetch completed in ${fetchTime}ms, status: ${response.status}, ok: ${response.ok}`)
+      setLoadingStatus('Processing response...')
 
       // Read response as text first, then parse as JSON (can only read body once)
       const responseText = await response.text()
       console.log('Response text received, length:', responseText.length)
+      setLoadingStatus('Parsing translation...')
 
       if (!response.ok) {
         let details = ''
@@ -102,6 +116,7 @@ export default function CognitiveBridge() {
       }
       
       console.log('Setting output, length:', data.translation.length)
+      setLoadingStatus('Complete!')
       setOutput(data.translation)
       // Update local context so follow-up questions can refer back
       setContext({
@@ -121,6 +136,7 @@ export default function CognitiveBridge() {
       setError(err.message || 'An error occurred. Please try again.')
     } finally {
       setLoading(false)
+      setLoadingStatus('')
     }
   }
 
@@ -163,34 +179,41 @@ export default function CognitiveBridge() {
             </div>
 
             <div>
-            <label htmlFor="input" className="block text-sm font-medium text-gray-700 mb-2">
-              Expert Knowledge Input
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label htmlFor="input" className="block text-sm font-medium text-gray-700">
+                Expert Knowledge Input
+              </label>
+              <div className="flex items-center gap-2">
+                <span className={`text-xs ${input.length > 5000 ? 'text-orange-600 font-medium' : 'text-gray-500'}`}>
+                  {input.length.toLocaleString()} / 5,000 chars
+                </span>
+                {(input || output || targetDomain || userPrompt) && (
+                  <button
+                    onClick={handleClear}
+                    disabled={loading}
+                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Clear all fields"
+                  >
+                    <X size={16} />
+                  </button>
+                )}
+              </div>
+            </div>
             <textarea
               id="input"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Paste technical text, research papers, or specialized content here..."
-              className="w-full h-48 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              className={`w-full h-48 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
+                input.length > 5000 ? 'border-orange-300' : 'border-gray-300'
+              }`}
             />
-          </div>
-
-            <div>
-              <label htmlFor="user-prompt" className="block text-sm font-medium text-gray-700 mb-1">
-                Optional question or focus
-              </label>
-              <input
-                id="user-prompt"
-                type="text"
-                value={userPrompt}
-                onChange={(e) => setUserPrompt(e.target.value)}
-                placeholder="e.g. focus on decision-making tradeoffs, or: compare to startup funding"
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Use this for follow-up questions too; the previous translation is kept as context.
+            {input.length > 5000 && (
+              <p className="mt-1 text-xs text-orange-600">
+                ⚠️ Input exceeds recommended size. Results may be truncated or incomplete.
               </p>
-            </div>
+            )}
+          </div>
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
@@ -229,6 +252,23 @@ export default function CognitiveBridge() {
             )}
           </button>
 
+          {loading && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+              <div className="flex items-center gap-3">
+                <Loader2 className="animate-spin text-blue-600" size={20} />
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-blue-900">{loadingStatus || 'Processing...'}</p>
+                  <p className="text-xs text-blue-700 mt-1">
+                    This typically takes 15-30 seconds. Please wait...
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 w-full bg-blue-200 rounded-full h-1.5">
+                <div className="bg-blue-600 h-1.5 rounded-full animate-pulse" style={{ width: '60%' }}></div>
+              </div>
+            </div>
+          )}
+
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
               {error}
@@ -245,6 +285,46 @@ export default function CognitiveBridge() {
               </div>
             </div>
           )}
+
+          {(output || loading) && (
+            <div>
+              <label htmlFor="user-prompt" className="block text-sm font-medium text-gray-700 mb-1">
+                Optional question or focus
+              </label>
+              <input
+                id="user-prompt"
+                type="text"
+                value={userPrompt}
+                onChange={(e) => setUserPrompt(e.target.value)}
+                placeholder="e.g. focus on decision-making tradeoffs, or: compare to startup funding"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Use this for follow-up questions too; the previous translation is kept as context.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <h3 className="text-sm font-semibold text-blue-900 mb-2">Functional Constraints (MVP)</h3>
+          <ul className="text-xs text-blue-800 space-y-1">
+            <li>
+              <strong>Text mode only:</strong> Text input/output, no images or multimedia
+            </li>
+            <li>
+              <strong>Output limits:</strong> Anthropic Claude (2,048 tokens), Gemini Flash (8,192 tokens)
+            </li>
+            <li>
+              <strong>Input size:</strong> Recommended under 5,000 characters for best results
+            </li>
+            <li>
+              <strong>Response time:</strong> 15-30 seconds typical (serverless function limits apply)
+            </li>
+            <li>
+              <strong>MVP status:</strong> Core functionality only, features may be limited
+            </li>
+          </ul>
         </div>
 
         <footer className="mt-12 text-center text-sm text-gray-500">
