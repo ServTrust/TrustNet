@@ -145,7 +145,7 @@ export default function CognitiveBridge() {
       <div className="container mx-auto px-4 py-12 max-w-4xl">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            TrustNet
+            Cognitive Bridge
           </h1>
           <p className="text-xl text-gray-600">
             Structural Knowledge Translation
