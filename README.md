@@ -45,6 +45,7 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 ## Use It
 
 **Live Instance** [Cognitive Bridge](cognitive-bridge.netlify.app)
+
 **Rate Limit:** 20 translations/day (free for personal use)
 
 **Self-Host:**
