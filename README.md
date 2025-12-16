@@ -44,7 +44,7 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 
 ## Use It
 
-**Live Instance:** [cognitive-bridge.netlify.app]  
+**Live Instance** [Cognitive Bridge](cognitive-bridge.netlify.app)
 **Rate Limit:** 20 translations/day (free for personal use)
 
 **Self-Host:**
@@ -52,7 +52,6 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 git clone https://github.com/ServTrust/TrustNet.git
 cd TrustNet
 npm install
-# Add your 
 # Add your Google/Anthropic API key(s) to .env 
 npm run dev
 ```
