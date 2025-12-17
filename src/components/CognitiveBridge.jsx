@@ -9,7 +9,7 @@ export default function CognitiveBridge() {
   const [loading, setLoading] = useState(false)
   const [loadingStatus, setLoadingStatus] = useState('')
   const [error, setError] = useState(null)
-  const [model, setModel] = useState('anthropic')
+  const [model, setModel] = useState('gemini')
   const [targetDomain, setTargetDomain] = useState('')
   const [userPrompt, setUserPrompt] = useState('')
   const [context, setContext] = useState(null)
@@ -40,14 +40,14 @@ export default function CognitiveBridge() {
 
   const modelOptions = [
     {
-      value: 'anthropic',
-      label: 'Anthropic Claude',
-      helper: 'Best for nuanced reasoning and longer outputs.',
-    },
-    {
       value: 'gemini',
       label: 'Google Gemini',
       helper: 'Flash model - fastest responses, great for quick drafts.',
+    },
+    {
+      value: 'anthropic',
+      label: 'Anthropic Claude',
+      helper: 'Best for nuanced reasoning and longer outputs.',
     },
   ]
 
@@ -62,7 +62,7 @@ export default function CognitiveBridge() {
     try {
       console.log('Starting translation request, model:', model)
       const startTime = Date.now()
-      
+
       const response = await fetch('/api/translate', {
         method: 'POST',
         headers: {
@@ -109,12 +109,12 @@ export default function CognitiveBridge() {
         console.error('Response text (first 500 chars):', responseText.slice(0, 500))
         throw new Error(`Failed to parse server response: ${jsonErr.message}`)
       }
-      
+
       if (!data.translation) {
         console.error('No translation in response:', data)
         throw new Error('No translation received from server')
       }
-      
+
       console.log('Setting output, length:', data.translation.length)
       setLoadingStatus('Complete!')
       setOutput(data.translation)
@@ -179,41 +179,40 @@ export default function CognitiveBridge() {
             </div>
 
             <div>
-            <div className="flex items-center justify-between mb-2">
-              <label htmlFor="input" className="block text-sm font-medium text-gray-700">
-                Expert Knowledge Input
-              </label>
-              <div className="flex items-center gap-2">
-                <span className={`text-xs ${input.length > 5000 ? 'text-orange-600 font-medium' : 'text-gray-500'}`}>
-                  {input.length.toLocaleString()} / 5,000 chars
-                </span>
-                {(input || output || targetDomain || userPrompt) && (
-                  <button
-                    onClick={handleClear}
-                    disabled={loading}
-                    className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Clear all fields"
-                  >
-                    <X size={16} />
-                  </button>
-                )}
+              <div className="flex items-center justify-between mb-2">
+                <label htmlFor="input" className="block text-sm font-medium text-gray-700">
+                  Expert Knowledge Input
+                </label>
+                <div className="flex items-center gap-2">
+                  <span className={`text-xs ${input.length > 5000 ? 'text-orange-600 font-medium' : 'text-gray-500'}`}>
+                    {input.length.toLocaleString()} / 5,000 chars
+                  </span>
+                  {(input || output || targetDomain || userPrompt) && (
+                    <button
+                      onClick={handleClear}
+                      disabled={loading}
+                      className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Clear all fields"
+                    >
+                      <X size={16} />
+                    </button>
+                  )}
+                </div>
               </div>
+              <textarea
+                id="input"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Paste technical text, research papers, or specialized content here..."
+                className={`w-full h-48 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${input.length > 5000 ? 'border-orange-300' : 'border-gray-300'
+                  }`}
+              />
+              {input.length > 5000 && (
+                <p className="mt-1 text-xs text-orange-600">
+                  ⚠️ Input exceeds recommended size. Results may be truncated or incomplete.
+                </p>
+              )}
             </div>
-            <textarea
-              id="input"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Paste technical text, research papers, or specialized content here..."
-              className={`w-full h-48 p-4 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none ${
-                input.length > 5000 ? 'border-orange-300' : 'border-gray-300'
-              }`}
-            />
-            {input.length > 5000 && (
-              <p className="mt-1 text-xs text-orange-600">
-                ⚠️ Input exceeds recommended size. Results may be truncated or incomplete.
-              </p>
-            )}
-          </div>
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-gray-200">

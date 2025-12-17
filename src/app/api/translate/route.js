@@ -22,14 +22,14 @@ export async function POST(request) {
   try {
     // Step 1: Parse request body
     let text
-    let model = 'anthropic'
+    let model = 'gemini'
     let targetDomain = null
     let userPrompt = null
     let context = null
     try {
       const body = await request.json()
       text = body.text
-      model = body.model && SUPPORTED_MODELS[body.model] ? body.model : 'anthropic'
+      model = body.model && SUPPORTED_MODELS[body.model] ? body.model : 'gemini'
       targetDomain = body.targetDomain || null
       userPrompt = body.userPrompt || null
       context = body.context || null
@@ -87,10 +87,10 @@ export async function POST(request) {
 
     const conversationContext = context
       ? `\n\nThere is existing conversation context you should respect:\n${JSON.stringify(
-          context,
-          null,
-          2
-        ).slice(0, 4000)}\n\nTreat this as prior turns in the dialogue and avoid repeating yourself.`
+        context,
+        null,
+        2
+      ).slice(0, 4000)}\n\nTreat this as prior turns in the dialogue and avoid repeating yourself.`
       : ''
 
     const userPromptInstruction = userPrompt
@@ -187,7 +187,7 @@ Structural translation:`
       stack: error.stack,
       cause: error.cause
     })
-    
+
     // Determine user-friendly error message based on error content
     let userMessage = 'Translation failed'
     let statusCode = 500
@@ -201,12 +201,12 @@ Structural translation:`
     }
 
     return NextResponse.json(
-      { 
-        error: userMessage, 
+      {
+        error: userMessage,
         details: error.message,
         type: error.name,
         requestId
-      }, 
+      },
       { status: statusCode }
     )
   }
@@ -256,14 +256,13 @@ async function callAnthropicAPI({ prompt, apiKey, requestId }) {
 
       try {
         errorData = JSON.parse(errorText)
-      } catch {}
+      } catch { }
     } catch (readError) {
       console.error(`[${requestId}] Failed to read error response:`, readError)
     }
 
     throw new Error(
-      `Anthropic API error (${response.status} ${response.statusText}): ${
-        errorData || errorText?.slice(0, 1000) || 'No error details available'
+      `Anthropic API error (${response.status} ${response.statusText}): ${errorData || errorText?.slice(0, 1000) || 'No error details available'
       }`
     )
   }
@@ -295,7 +294,7 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
   const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${SUPPORTED_MODELS.gemini.id}:generateContent?key=${encodeURIComponent(apiKey)}`
 
   console.log(`[${requestId}] Starting Gemini API fetch to: ${endpoint.replace(apiKey, '***')}`)
-  
+
   // Add timeout to prevent hanging
   const controller = new AbortController()
   const timeoutId = setTimeout(() => {
@@ -352,7 +351,7 @@ async function callGeminiAPI({ prompt, apiKey, requestId }) {
     try {
       const parsed = JSON.parse(responseText)
       details = parsed?.error?.message || parsed?.error?.details || parsed?.error || responseText
-    } catch {}
+    } catch { }
 
     const errorMessage =
       typeof details === 'string' ? details.slice(0, 1000) : JSON.stringify(details).slice(0, 1000)

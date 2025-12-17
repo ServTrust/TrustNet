@@ -44,11 +44,7 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 
 ## Use It
 
-<<<<<<< HEAD
-**Live Instance** [Cognitive Bridge](cognitive-bridge.netlify.app)
-=======
-**Live Instance:** [Cognitive Bridge](cognitive-bridge.netlify.app)  
->>>>>>> 33d8602 (API congestion error handling)
+**Live Instance:** [Cognitive Bridge](cognitive-bridge.netlify.app)
 
 **Rate Limit:** 20 translations/day (free for personal use)
 
@@ -57,11 +53,7 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 git clone https://github.com/ServTrust/cognitive-bridge.git
 cd cognitive-bridge
 npm install
-<<<<<<< HEAD
-# Add your Google/Anthropic API key(s) to .env 
-=======
 # Add your Google/Anthropic API key(s) to .env
->>>>>>> 33d8602 (API congestion error handling)
 npm run dev
 ```
 
@@ -89,7 +81,7 @@ Hidden complexity → Visible pattern
 
 **Built with:**
 - Next.js 14 (React framework)
-- Anthropic Claude API (structural analysis)
+- Google Gemini API (structural analysis)
 - Tailwind CSS (styling)
 
 **Architecture:**
@@ -99,8 +91,8 @@ Hidden complexity → Visible pattern
 - Client-side state only
 
 **API Support:**
-- Anthropic Claude API (primary)
-- Google Gemini API (alternative)
+- Google Gemini API (primary)
+- Anthropic Claude API (alternative)
 - Model choice persisted in localStorage
 
 **Functional Constraints (MVP):**
@@ -136,7 +128,7 @@ Hidden complexity → Visible pattern
 **Model Selection:**
 - Choice persisted in localStorage
 - Small dropdown selector (not prominent buttons)
-- Default: Anthropic Claude
+- Default: Google Gemini
 - Options: Anthropic Claude, Google Gemini
 
 **Target Domain Customization:**
