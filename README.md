@@ -1,7 +1,7 @@
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ServTrust/TrustNet)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ServTrust/cognitive-bridge)
 
-# TrustNet: Structural Knowledge Translation
+# Cognitive Bridge: Structural Knowledge Translation
 
 Bridges expert domains to collective understanding by translating conceptual structure, not just words.
 
@@ -17,7 +17,7 @@ Expert knowledge is locked behind:
 - Unstated mental models
 
 ### The Solution
-TrustNet identifies the **core structural pattern**, then finds **analogous structures** in everyday experience. Not simplification - **structural translation**.
+Cognitive Bridge identifies the **core structural pattern**, then finds **analogous structures** in everyday experience. Not simplification - **structural translation**.
 
 ## Why Structure Matters
 
@@ -44,16 +44,24 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 
 ## Use It
 
+<<<<<<< HEAD
 **Live Instance** [Cognitive Bridge](cognitive-bridge.netlify.app)
+=======
+**Live Instance:** [Cognitive Bridge](cognitive-bridge.netlify.app)  
+>>>>>>> 33d8602 (API congestion error handling)
 
 **Rate Limit:** 20 translations/day (free for personal use)
 
 **Self-Host:**
 ```bash
-git clone https://github.com/ServTrust/TrustNet.git
-cd TrustNet
+git clone https://github.com/ServTrust/cognitive-bridge.git
+cd cognitive-bridge
 npm install
+<<<<<<< HEAD
 # Add your Google/Anthropic API key(s) to .env 
+=======
+# Add your Google/Anthropic API key(s) to .env
+>>>>>>> 33d8602 (API congestion error handling)
 npm run dev
 ```
 

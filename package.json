@@ -1,7 +1,7 @@
 {
-  "name": "trustnet",
+  "name": "cognitive-bridge",
   "version": "1.0.0",
-  "description": "Structural knowledge translation - expert to collective understanding",
+  "description": "Cognitive Bridge - structural knowledge translation from expert domains to collective understanding",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

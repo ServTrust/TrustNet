@@ -188,14 +188,26 @@ Structural translation:`
       cause: error.cause
     })
     
+    // Determine user-friendly error message based on error content
+    let userMessage = 'Translation failed'
+    let statusCode = 500
+
+    if (error.message.includes('503') || error.message.toLowerCase().includes('overloaded')) {
+      userMessage = 'The model is currently overloaded. Please try again in a few moments.'
+      statusCode = 503
+    } else if (error.message.includes('429') || error.message.toLowerCase().includes('quota') || error.message.toLowerCase().includes('too many requests')) {
+      userMessage = 'Too many requests. Please wait a moment before trying again.'
+      statusCode = 429
+    }
+
     return NextResponse.json(
       { 
-        error: 'Translation failed', 
+        error: userMessage, 
         details: error.message,
         type: error.name,
         requestId
       }, 
-      { status: 500 }
+      { status: statusCode }
     )
   }
 }

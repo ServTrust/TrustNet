@@ -1,7 +1,7 @@
 import './globals.css'
 
 export const metadata = {
-  title: 'TrustNet - Structural Knowledge Translation',
+  title: 'Cognitive Bridge - Structural Knowledge Translation',
   description: 'Bridge expert knowledge to collective understanding through structural translation',
 }
 
