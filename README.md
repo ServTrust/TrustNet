@@ -50,8 +50,8 @@ The structure is now visible: adaptive problem-solving with dynamic tool discove
 
 **Self-Host:**
 ```bash
-git clone https://github.com/ServTrust/cognitive-bridge.git
-cd cognitive-bridge
+git clone https://github.com/ServTrust/TrustNet.git
+cd trustnet
 npm install
 # Add your Google/Anthropic API key(s) to .env
 npm run dev
