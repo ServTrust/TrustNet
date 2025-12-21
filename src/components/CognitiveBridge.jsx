@@ -213,6 +213,34 @@ export default function CognitiveBridge() {
                 </p>
               )}
             </div>
+
+            <div>
+              <label htmlFor="user-prompt" className="block text-sm font-medium text-gray-700 mb-1">
+                Optional question or focus
+              </label>
+              <div className="flex gap-2">
+                <input
+                  id="user-prompt"
+                  type="text"
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleTranslate()}
+                  placeholder="e.g. focus on decision-making tradeoffs, or: compare to startup funding"
+                  className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                />
+                <button
+                  onClick={handleTranslate}
+                  disabled={loading || !input.trim()}
+                  className="bg-gray-100 text-gray-600 border border-gray-300 p-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                  title="Send Prompt / Refine"
+                >
+                  <Send size={18} />
+                </button>
+              </div>
+              <p className="mt-1 text-xs text-gray-500">
+                Guide the translation or ask a follow-up question.
+              </p>
+            </div>
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-gray-200">
@@ -285,24 +313,7 @@ export default function CognitiveBridge() {
             </div>
           )}
 
-          {(output || loading) && (
-            <div>
-              <label htmlFor="user-prompt" className="block text-sm font-medium text-gray-700 mb-1">
-                Optional question or focus
-              </label>
-              <input
-                id="user-prompt"
-                type="text"
-                value={userPrompt}
-                onChange={(e) => setUserPrompt(e.target.value)}
-                placeholder="e.g. focus on decision-making tradeoffs, or: compare to startup funding"
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                Use this for follow-up questions too; the previous translation is kept as context.
-              </p>
-            </div>
-          )}
+
         </div>
 
         <div className="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">

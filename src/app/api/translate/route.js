@@ -94,7 +94,7 @@ export async function POST(request) {
       : ''
 
     const userPromptInstruction = userPrompt
-      ? `\n\nThe user has given an extra instruction or follow-up question you must honor:\n"${userPrompt}".`
+      ? `\n\nIMPORTANT USER INSTRUCTION:\nThe user has provided specific guidance or a follow-up question which you MUST prioritize:\n"${userPrompt}"\n\nIntegrate this into your analysis and translation.`
       : ''
 
     const prompt = `You are a structural knowledge translator. Your task is to reveal the conceptual structure beneath specialized knowledge by finding analogous structures in lived experience.
