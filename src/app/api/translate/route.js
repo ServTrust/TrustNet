@@ -97,6 +97,10 @@ export async function POST(request) {
       ? `\n\nIMPORTANT USER INSTRUCTION:\nThe user has provided specific guidance or a follow-up question which you MUST prioritize:\n"${userPrompt}"\n\nIntegrate this into your analysis and translation.`
       : ''
 
+    const structureInstruction = context
+      ? `IMPORTANT: This is a follow-up request. If the user is asking a question, ANSWER DIRECTLY. Do NOT use the headers below. Only use the translation structure if specifically asked to translate new text.`
+      : `Respond in this EXACT structure (use these headers):`
+
     const prompt = `You are a structural knowledge translator. Your task is to reveal the conceptual structure beneath specialized knowledge by finding analogous structures in lived experience.
 
 ${targetDomainInstruction}
@@ -106,7 +110,7 @@ Analyze the following expert text and (taking into account any prior context and
 
 
 
-Respond in this EXACT structure (use these headers):
+${structureInstruction}
 
 1. Identify the core structural pattern (what is this really about?)
 
