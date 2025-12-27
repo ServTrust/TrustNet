@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Send, Loader2, X } from 'lucide-react'
+import { Send, Loader2, X, Github } from 'lucide-react'
 
 export default function CognitiveBridge() {
   const [input, setInput] = useState('')
@@ -11,8 +11,8 @@ export default function CognitiveBridge() {
   const [error, setError] = useState(null)
   const [model, setModel] = useState('gemini')
   const [targetDomain, setTargetDomain] = useState('')
-  const [userPrompt, setUserPrompt] = useState('')
-  const [context, setContext] = useState(null)
+
+
 
   // Load persisted model choice from localStorage
   useEffect(() => {
@@ -34,8 +34,8 @@ export default function CognitiveBridge() {
     setOutput('')
     setError(null)
     setTargetDomain('')
-    setUserPrompt('')
-    setContext(null)
+
+
   }
 
   const modelOptions = [
@@ -72,8 +72,8 @@ export default function CognitiveBridge() {
           text: input,
           model,
           targetDomain: targetDomain.trim() || null,
-          userPrompt: userPrompt.trim() || null,
-          context,
+
+
         }),
       })
 
@@ -119,18 +119,7 @@ export default function CognitiveBridge() {
       setLoadingStatus('Complete!')
       setOutput(data.translation)
       // Update local context so follow-up questions can refer back
-      setContext({
-        expertText: input,
-        targetDomain: targetDomain.trim() || null,
-        history: [
-          ...(context?.history || []),
-          {
-            model,
-            output: data.translation,
-            timestamp: Date.now(),
-          },
-        ],
-      })
+
     } catch (err) {
       console.error('Translation error:', err)
       setError(err.message || 'An error occurred. Please try again.')
@@ -153,6 +142,33 @@ export default function CognitiveBridge() {
           <p className="text-sm text-gray-500 mt-2">
             Bridge expert knowledge to collective understanding
           </p>
+
+          <div className="mt-6 space-y-2">
+            <div className="flex items-center justify-center gap-2 text-sm text-gray-600 flex-wrap">
+              <a
+                href="https://github.com/ServTrust/TrustNet"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 hover:text-blue-600 hover:underline"
+              >
+                <Github size={16} />
+                Look under the hood
+              </a>
+              <span className="text-gray-300">|</span>
+              <span>Learn all about it</span>
+              <a
+                href="https://deepwiki.com/ServTrust/TrustNet"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki" className="h-5" />
+              </a>
+            </div>
+
+            <p className="text-sm text-gray-600">
+              Support us via <a href="https://donate.stripe.com/14AaEWa98agEchnb1H0Ba00" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline font-medium">Stripe</a>.
+            </p>
+          </div>
         </header>
 
         <div className="bg-white rounded-lg shadow-lg p-6 space-y-6">
@@ -187,7 +203,7 @@ export default function CognitiveBridge() {
                   <span className={`text-xs ${input.length > 5000 ? 'text-orange-600 font-medium' : 'text-gray-500'}`}>
                     {input.length.toLocaleString()} / 5,000 chars
                   </span>
-                  {(input || output || targetDomain || userPrompt) && (
+                  {(input || output || targetDomain) && (
                     <button
                       onClick={handleClear}
                       disabled={loading}
@@ -214,33 +230,7 @@ export default function CognitiveBridge() {
               )}
             </div>
 
-            <div>
-              <label htmlFor="user-prompt" className="block text-sm font-medium text-gray-700 mb-1">
-                Optional question or focus
-              </label>
-              <div className="flex gap-2">
-                <input
-                  id="user-prompt"
-                  type="text"
-                  value={userPrompt}
-                  onChange={(e) => setUserPrompt(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && handleTranslate()}
-                  placeholder="e.g. focus on decision-making tradeoffs, or: compare to startup funding"
-                  className="flex-1 p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                />
-                <button
-                  onClick={handleTranslate}
-                  disabled={loading || !input.trim()}
-                  className="bg-gray-100 text-gray-600 border border-gray-300 p-2 rounded-lg hover:bg-blue-50 hover:text-blue-600 hover:border-blue-300 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                  title="Send Prompt / Refine"
-                >
-                  <Send size={18} />
-                </button>
-              </div>
-              <p className="mt-1 text-xs text-gray-500">
-                Guide the translation or ask a follow-up question.
-              </p>
-            </div>
+
           </div>
 
           <div className="flex items-center justify-between pt-2 border-t border-gray-200">

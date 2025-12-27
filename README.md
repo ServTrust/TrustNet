@@ -1,5 +1,5 @@
 
-[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ServTrust/cognitive-bridge)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ServTrust/TrustNet)
 
 # Cognitive Bridge: Structural Knowledge Translation
 
@@ -81,7 +81,7 @@ Hidden complexity → Visible pattern
 
 **Built with:**
 - Next.js 14 (React framework)
-- Google Gemini API (structural analysis)
+- Anthropic Claude API (structural analysis)
 - Tailwind CSS (styling)
 
 **Architecture:**
@@ -111,7 +111,6 @@ Hidden complexity → Visible pattern
 **Primary Focus:**
 - Expert Knowledge Input (large textarea) - main content area
 - Optional target domain input (small text field) - configures analogy domain
-- Optional question/focus input (small text field) - for follow-up questions and specific guidance
 
 **Secondary Elements:**
 - Model selector (small dropdown) - persistent, visually de-emphasized, located below inputs
@@ -122,7 +121,7 @@ Hidden complexity → Visible pattern
 
 **Context Preservation:**
 - Translation history maintained in client-side state
-- Follow-up questions can reference previous translations
+
 - Target domain persists across conversation turns
 
 **Model Selection:**
@@ -137,10 +136,7 @@ Hidden complexity → Visible pattern
 - Examples: parenting, cooking, small business, classroom, sports
 - Guides the translation to find analogies in that specific domain
 
-**Follow-up Questions:**
-- Optional prompt input for additional guidance or questions
-- Previous translation context automatically included
-- Allows iterative refinement without re-entering expert text
+
 
 ### Future Direction
 
@@ -162,10 +158,7 @@ This is cognitive infrastructure. Contributions welcome:
 
 Free for personal use, forever.
 
-Infrastructure costs covered by:
-- Community donations: [Ko-fi/GitHub Sponsors link]
-- Institutional grants
-- Your support
+Support cognitive infrastructure via [Stripe](https://donate.stripe.com/14AaEWa98agEchnb1H0Ba00).
 
 Current costs: ~$50-200/month depending on usage
 
