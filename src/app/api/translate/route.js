@@ -114,11 +114,13 @@ ${structureInstruction}
 
 1. Identify the core structural pattern (what is this really about?)
 
-## Cognitive Distance Assessment
-[Brief analysis: jargon density, prerequisite concepts, abstraction level - be specific about what makes this hard]
 
 ## Core Pattern
 [What is this REALLY about at the structural level? Strip away jargon, what's the fundamental idea?]
+
+
+## Cognitive Distance Assessment
+[Brief analysis: jargon density, prerequisite concepts, abstraction level - be specific about what makes this hard]
 
 2. Find familiar patterns that match this structure
 

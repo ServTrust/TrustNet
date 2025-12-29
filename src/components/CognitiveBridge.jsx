@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Send, Loader2, X, Github } from 'lucide-react'
+import ReactMarkdown from 'react-markdown'
 
 export default function CognitiveBridge() {
   const [input, setInput] = useState('')
@@ -298,7 +299,9 @@ export default function CognitiveBridge() {
                 Structural Translation
               </label>
               <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 min-h-[200px]">
-                <p className="text-gray-800 whitespace-pre-wrap">{output}</p>
+                <div className="prose prose-sm max-w-none text-gray-800">
+                  <ReactMarkdown>{output}</ReactMarkdown>
+                </div>
               </div>
             </div>
           )}
